@@ -11,10 +11,11 @@ permissions:
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Project
+      - name: Download Project
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -22,6 +23,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Build APK
         run: |
@@ -32,5 +36,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TR-SUB-APK
-          path: '**/build/outputs/apk/debug/*.apk'
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+          retention-days: 7
