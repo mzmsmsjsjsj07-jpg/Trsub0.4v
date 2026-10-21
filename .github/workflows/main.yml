@@ -1,4 +1,4 @@
-name: Build TR.SUB APK
+name: Build Android APK
 
 on:
   workflow_dispatch:
@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   build:
-    name: Build Android APK
     runs-on: ubuntu-latest
 
     steps:
@@ -25,17 +24,31 @@ jobs:
           java-version: '17'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Check Project Files
+        run: |
+          echo "Project files:"
+          ls -la
+          echo "Gradle files:"
+          find . -maxdepth 4 \( -name gradlew -o -name build.gradle -o -name build.gradle.kts -o -name settings.gradle -o -name settings.gradle.kts \)
 
       - name: Build APK
         run: |
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+            ./gradlew assembleDebug --no-daemon
+          elif [ -f ./gradlew.bat ]; then
+            echo "Windows Gradle wrapper found; Linux wrapper is missing."
+            exit 1
+          else
+            echo "Gradle wrapper is missing. Project structure must be checked."
+            exit 1
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: TR-SUB-APK
-          path: app/build/outputs/apk/debug/*.apk
+          path: '**/build/outputs/apk/debug/*.apk'
           if-no-files-found: error
-          retention-days: 7
